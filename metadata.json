@@ -1,0 +1,6 @@
+{
+  "name": "Gemelo Digital Minero - Mantenimiento de Carguío",
+  "description": "Gemelo digital operacional y plataforma predictiva/prescriptiva para gestión de mantenimiento en flotas de carguío y acarreo minero con telemetría IoT, cálculo de Health Score, estimación de RUL, detección de anomalías y asistente IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

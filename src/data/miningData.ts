@@ -1,0 +1,1047 @@
+import { Equipment, SparePartItem, WorkOrder, AlertNotification, MiningFleetKPIs } from '../types';
+
+export const MINE_LOCATIONS = [
+  { id: 'banco-3420', name: 'Banco 3420 (Fase 5 - Mineral)', lat: -16.4251, lng: -71.5382, altitude: 3420, type: 'LOADING_ZONE' },
+  { id: 'banco-3380', name: 'Banco 3380 (Fase 4 - Lastre)', lat: -16.4290, lng: -71.5340, altitude: 3380, type: 'LOADING_ZONE' },
+  { id: 'chancadora-01', name: 'Chancadora Primaria 01 (In-Pit)', lat: -16.4180, lng: -71.5450, altitude: 3510, type: 'CRUSHER' },
+  { id: 'botadero-este', name: 'Botadero Este #03 (Desmonte)', lat: -16.4350, lng: -71.5250, altitude: 3580, type: 'DUMP_SITE' },
+  { id: 'taller-central', name: 'Taller Central de Mantenimiento Mina', lat: -16.4120, lng: -71.5520, altitude: 3490, type: 'WORKSHOP' },
+  { id: 'grifo-mina', name: 'Estación de Combustible & Lubricación', lat: -16.4140, lng: -71.5490, altitude: 3495, type: 'FUEL_STATION' },
+  { id: 'rampa-principal', name: 'Rampa Principal Este (Pendiente 10.5%)', lat: -16.4220, lng: -71.5400, altitude: 3450, type: 'RAMP' },
+];
+
+export const INITIAL_SPARE_PARTS: SparePartItem[] = [
+  {
+    id: 'part-01',
+    partNumber: 'CAT-384-9210',
+    description: 'Bomba de Pistones Axiales Hidráulica Principal (350 bar)',
+    oem: 'Caterpillar OEM',
+    category: 'Sistema Hidráulico',
+    unitCostUsd: 18500,
+    stockAvailable: 3,
+    stockReserved: 1,
+    leadTimeDays: 4,
+    warehouseLocation: 'Nave B - Estante 14-A'
+  },
+  {
+    id: 'part-02',
+    partNumber: 'CAT-458-1120',
+    description: 'Kit de Sellos y Empaques de Cilindro de Levante (Hoist)',
+    oem: 'Caterpillar OEM',
+    category: 'Sistema Hidráulico',
+    unitCostUsd: 3200,
+    stockAvailable: 8,
+    stockReserved: 2,
+    leadTimeDays: 2,
+    warehouseLocation: 'Nave B - Estante 08-C'
+  },
+  {
+    id: 'part-03',
+    partNumber: 'KOM-569-43-81100',
+    description: 'Inyector de Combustible Common-Rail QSK78',
+    oem: 'Komatsu / Cummins',
+    category: 'Motor Diésel',
+    unitCostUsd: 1450,
+    stockAvailable: 24,
+    stockReserved: 6,
+    leadTimeDays: 3,
+    warehouseLocation: 'Nave A - Estante 03-D'
+  },
+  {
+    id: 'part-04',
+    partNumber: 'CAT-228-5614',
+    description: 'Turbocargador de Alta Presión Serie C175-20',
+    oem: 'Caterpillar OEM',
+    category: 'Motor Diésel',
+    unitCostUsd: 12400,
+    stockAvailable: 2,
+    stockReserved: 0,
+    leadTimeDays: 7,
+    warehouseLocation: 'Nave A - Estante 12-B'
+  },
+  {
+    id: 'part-05',
+    partNumber: 'PH-882-9901',
+    description: 'Juego de Rodamientos de Rodillo Esférico para Corona de Giro',
+    oem: 'P&H Joy Mining',
+    category: 'Tren de Rodaje / Giro',
+    unitCostUsd: 26800,
+    stockAvailable: 1,
+    stockReserved: 1,
+    leadTimeDays: 14,
+    warehouseLocation: 'Nave C - Zona Carga Pesada'
+  },
+  {
+    id: 'part-06',
+    partNumber: 'GE-150-IGBT-MOD',
+    description: 'Módulo Inversor IGBT de Tracción AC Statex III',
+    oem: 'General Electric / Komatsu',
+    category: 'Sistema Eléctrico',
+    unitCostUsd: 9600,
+    stockAvailable: 5,
+    stockReserved: 1,
+    leadTimeDays: 5,
+    warehouseLocation: 'Nave D - Cuarto Climatizado'
+  },
+  {
+    id: 'part-07',
+    partNumber: 'CAT-1R-0716',
+    description: 'Filtro de Aceite de Motor Ultra High Efficiency (Pack x12)',
+    oem: 'Caterpillar OEM',
+    category: 'Consumibles / PM',
+    unitCostUsd: 850,
+    stockAvailable: 45,
+    stockReserved: 10,
+    leadTimeDays: 1,
+    warehouseLocation: 'Nave A - Pasillo Filtros'
+  },
+  {
+    id: 'part-08',
+    partNumber: 'MIC-59/80R63-XDR3',
+    description: 'Neumático Minero Gigante 59/80R63 XDR3 (400T Capacity)',
+    oem: 'Michelin Earthmover',
+    category: 'Tren de Rodaje',
+    unitCostUsd: 58000,
+    stockAvailable: 6,
+    stockReserved: 2,
+    leadTimeDays: 21,
+    warehouseLocation: 'Patio de Neumáticos Mina'
+  }
+];
+
+export const INITIAL_EQUIPMENT_LIST: Equipment[] = [
+  {
+    id: 'eq-cat-797f-04',
+    code: 'CA-797-04',
+    name: 'Camión de Extracción Caterpillar 797F #04',
+    type: 'CAMION_EXTRACCION',
+    model: '797F (400 Ton)',
+    manufacturer: 'Caterpillar',
+    year: 2022,
+    totalOperatingHours: 14850,
+    status: 'OPERATIVO',
+    healthScore: 71.4,
+    rulHours: 142, // Alerta: RUL bajo en bomba hidráulica
+    rulConfidence: 94.2,
+    availabilityPct: 88.5,
+    utilizationPct: 82.1,
+    mtbfHours: 420,
+    mttrHours: 4.8,
+    gps: {
+      lat: -16.4225,
+      lng: -71.5395,
+      altitude: 3445,
+      zoneName: 'Rampa Principal Este (Subiendo cargado 395T)',
+      speedKmh: 14.2,
+      headingDeg: 125
+    },
+    activeAlertCount: 2,
+    openWorkOrderCount: 1,
+    assignedOperator: 'Ing. Carlos Mendoza (Op. Master)',
+    currentShift: 'GUARDIA_DIA',
+    lastServiceDate: '2026-08-01',
+    nextScheduledPmDate: '2026-08-28',
+    hourlyDowntimeCostUsd: 135000,
+    telemetry: {
+      timestamp: '2026-08-23T13:18:42Z',
+      engineRpm: 1750,
+      engineTemp: 94.2,
+      coolantTemp: 91.0,
+      oilPressure: 46.5,
+      hydraulicPressure: 338.0, // Presión anormal en circuito de levante
+      hydraulicTemp: 98.4, // Sobretemperatura en aceite hidráulico
+      vibrationRms: 6.82, // Alta vibración en bomba axial (Alerta)
+      vibrationPeak: 12.4,
+      fuelRate: 342.0, // L/h en rampa 10%
+      fuelEfficiency: 1.15,
+      payloadTons: 398.5,
+      payloadNominal: 400.0,
+      cycleCount: 18,
+      engineLoadPct: 92.4,
+      brakeTemp: 118.0,
+      batteryVoltage: 27.8,
+      transmissionOilTemp: 88.5,
+      ambientTemp: 24.5,
+      altitudeMeters: 3445,
+      inclineGradePct: 10.2,
+      dustIndexPpm: 48.0,
+      isoOilContamination: '21/18/15' // Contaminación elevada
+    },
+    subsystems: {
+      MOTOR_DIESEL_POWERTRAIN: {
+        id: 'MOTOR_DIESEL_POWERTRAIN',
+        name: 'Motor Diésel C175-20 & Tren de Fuerza',
+        healthScore: 84.0,
+        status: 'OPTIMO',
+        temperature: 94.2,
+        vibration: 2.1,
+        wearLevel: 28.0,
+        rulHours: 1250,
+        anomalyDetected: false,
+        anomalyScore: 0.12,
+        primaryMetricName: 'Temp. Escape & Carga',
+        primaryMetricValue: '94.2°C (92% Load)',
+        sensors: [
+          { name: 'Temperatura de Refrigerante', value: 91.0, unit: '°C', nominalMin: 75, nominalMax: 95, currentStatus: 'NORMAL' },
+          { name: 'Presión de Aceite de Motor', value: 46.5, unit: 'PSI', nominalMin: 35, nominalMax: 65, currentStatus: 'NORMAL' },
+          { name: 'Temperatura de Turbocargador', value: 580, unit: '°C', nominalMin: 400, nominalMax: 650, currentStatus: 'NORMAL' },
+          { name: 'Consumo Instantáneo', value: 342, unit: 'L/h', nominalMin: 180, nominalMax: 380, currentStatus: 'NORMAL' }
+        ]
+      },
+      SISTEMA_HIDRAULICO: {
+        id: 'SISTEMA_HIDRAULICO',
+        name: 'Sistema Hidráulico & Cilindros de Levante',
+        healthScore: 54.2,
+        status: 'CRITICO',
+        temperature: 98.4,
+        pressure: 338.0,
+        vibration: 6.82,
+        wearLevel: 68.5,
+        rulHours: 142,
+        anomalyDetected: true,
+        anomalyScore: 0.88,
+        primaryMetricName: 'Vibración RMS Bomba Principal',
+        primaryMetricValue: '6.82 mm/s (Umbral: 4.5)',
+        sensors: [
+          { name: 'Vibración Espectral Bomba 1', value: 6.82, unit: 'mm/s', nominalMin: 0.5, nominalMax: 4.5, currentStatus: 'CRITICO' },
+          { name: 'Temperatura Aceite Hidráulico', value: 98.4, unit: '°C', nominalMin: 50, nominalMax: 85, currentStatus: 'ALTO' },
+          { name: 'Presión de Descarga Bomba', value: 338.0, unit: 'bar', nominalMin: 220, nominalMax: 310, currentStatus: 'ALTO' },
+          { name: 'Código Limpieza ISO 4406', value: 21, unit: 'ISO', nominalMin: 14, nominalMax: 17, currentStatus: 'CRITICO' }
+        ]
+      },
+      TREN_RODAJE_SUSPENSION: {
+        id: 'TREN_RODAJE_SUSPENSION',
+        name: 'Tren de Rodaje, Suspensión & Neumáticos 63"',
+        healthScore: 78.5,
+        status: 'OPTIMO',
+        temperature: 68.0,
+        vibration: 3.4,
+        wearLevel: 35.0,
+        rulHours: 850,
+        anomalyDetected: false,
+        anomalyScore: 0.22,
+        primaryMetricName: 'Presión Suspensión Del.',
+        primaryMetricValue: '28.4 bar (TKPH 410)',
+        sensors: [
+          { name: 'Presión Cilindro Suspensión Del. Izq.', value: 28.4, unit: 'bar', nominalMin: 22, nominalMax: 32, currentStatus: 'NORMAL' },
+          { name: 'Temperatura Frenos Traseros Húmedos', value: 118.0, unit: '°C', nominalMin: 60, nominalMax: 130, currentStatus: 'NORMAL' },
+          { name: 'Índice de Fatiga Neumáticos (TKPH)', value: 410, unit: 'TKPH', nominalMin: 200, nominalMax: 480, currentStatus: 'NORMAL' }
+        ]
+      },
+      SISTEMA_ELECTRICO_CONTROL: {
+        id: 'SISTEMA_ELECTRICO_CONTROL',
+        name: 'Sistema Eléctrico, Módulos ECM & Telemetría',
+        healthScore: 92.0,
+        status: 'OPTIMO',
+        temperature: 42.0,
+        vibration: 0.8,
+        wearLevel: 12.0,
+        rulHours: 3200,
+        anomalyDetected: false,
+        anomalyScore: 0.05,
+        primaryMetricName: 'Voltaje Bus & Enlace CAN',
+        primaryMetricValue: '27.8 V (CAN J1939 OK)',
+        sensors: [
+          { name: 'Voltaje Alternador / Baterías', value: 27.8, unit: 'V', nominalMin: 24, nominalMax: 29, currentStatus: 'NORMAL' },
+          { name: 'Latencia Enlace MQTT/OPC-UA', value: 42, unit: 'ms', nominalMin: 10, nominalMax: 120, currentStatus: 'NORMAL' },
+          { name: 'Temperatura Gabinete VIMS', value: 38.5, unit: '°C', nominalMin: 15, nominalMax: 55, currentStatus: 'NORMAL' }
+        ]
+      },
+      ESTRUCTURA_CHASIS_TOLVA: {
+        id: 'ESTRUCTURA_CHASIS_TOLVA',
+        name: 'Chasis Cast-Steel, Bastidor & Tolva 400T',
+        healthScore: 86.4,
+        status: 'OPTIMO',
+        temperature: 28.0,
+        vibration: 2.8,
+        wearLevel: 22.0,
+        rulHours: 2400,
+        anomalyDetected: false,
+        anomalyScore: 0.14,
+        primaryMetricName: 'Deformación Galgas Extensiométricas',
+        primaryMetricValue: '420 µε (Fatiga 18%)',
+        sensors: [
+          { name: 'Microdeformación Viga Central', value: 420, unit: 'µε', nominalMin: 100, nominalMax: 850, currentStatus: 'NORMAL' },
+          { name: 'Desgaste Placas de Revestimiento Tolva', value: 18, unit: '%', nominalMin: 0, nominalMax: 60, currentStatus: 'NORMAL' }
+        ]
+      }
+    }
+  },
+  {
+    id: 'eq-pala-ph-4100-01',
+    code: 'PL-4100-01',
+    name: 'Pala Eléctrica de Cable P&H 4100XPC #01',
+    type: 'PALA_ELECTRICA',
+    model: '4100XPC (100 Ton/Pase)',
+    manufacturer: 'Komatsu / P&H Mining',
+    year: 2020,
+    totalOperatingHours: 22400,
+    status: 'OPERATIVO',
+    healthScore: 89.2,
+    rulHours: 780,
+    rulConfidence: 91.5,
+    availabilityPct: 94.2,
+    utilizationPct: 88.0,
+    mtbfHours: 680,
+    mttrHours: 3.6,
+    gps: {
+      lat: -16.4255,
+      lng: -71.5378,
+      altitude: 3422,
+      zoneName: 'Banco 3420 (Frente Mineral Fase 5)',
+      speedKmh: 0.0,
+      headingDeg: 280
+    },
+    activeAlertCount: 0,
+    openWorkOrderCount: 0,
+    assignedOperator: 'Téc. Marco Aurelio Quispe',
+    currentShift: 'GUARDIA_DIA',
+    lastServiceDate: '2026-08-10',
+    nextScheduledPmDate: '2026-09-02',
+    hourlyDowntimeCostUsd: 185000,
+    telemetry: {
+      timestamp: '2026-08-23T13:19:10Z',
+      engineRpm: 1200,
+      engineTemp: 64.0,
+      coolantTemp: 58.0,
+      oilPressure: 55.0,
+      hydraulicPressure: 210.0,
+      hydraulicTemp: 52.0,
+      vibrationRms: 2.15,
+      vibrationPeak: 4.8,
+      fuelRate: 0.0, // Eléctrica
+      fuelEfficiency: 0.0,
+      payloadTons: 98.4,
+      payloadNominal: 100.0,
+      cycleCount: 142,
+      engineLoadPct: 76.0,
+      brakeTemp: 62.0,
+      batteryVoltage: 7200.0, // 7.2 kV subestación móvil
+      transmissionOilTemp: 64.0,
+      ambientTemp: 23.0,
+      altitudeMeters: 3422,
+      inclineGradePct: 0.0,
+      dustIndexPpm: 62.0,
+      isoOilContamination: '16/14/11'
+    },
+    subsystems: {
+      MOTOR_DIESEL_POWERTRAIN: {
+        id: 'MOTOR_DIESEL_POWERTRAIN',
+        name: 'Motores Eléctricos AC Hoist & Crowd',
+        healthScore: 91.0,
+        status: 'OPTIMO',
+        temperature: 68.0,
+        vibration: 1.8,
+        wearLevel: 15.0,
+        rulHours: 1800,
+        anomalyDetected: false,
+        anomalyScore: 0.08,
+        primaryMetricName: 'Temperatura Estator Motor Hoist',
+        primaryMetricValue: '68.0°C (Corriente 420A)',
+        sensors: [
+          { name: 'Temp. Devanado Motor Levante', value: 68.0, unit: '°C', nominalMin: 40, nominalMax: 110, currentStatus: 'NORMAL' },
+          { name: 'Corriente RMS Motor Crowd', value: 395, unit: 'A', nominalMin: 100, nominalMax: 650, currentStatus: 'NORMAL' }
+        ]
+      },
+      SISTEMA_HIDRAULICO: {
+        id: 'SISTEMA_HIDRAULICO',
+        name: 'Sistema Electro-Hidráulico de Frenado & Tensión',
+        healthScore: 94.0,
+        status: 'OPTIMO',
+        temperature: 52.0,
+        pressure: 210.0,
+        vibration: 1.2,
+        wearLevel: 10.0,
+        rulHours: 2400,
+        anomalyDetected: false,
+        anomalyScore: 0.04,
+        primaryMetricName: 'Presión Acumulador de Freno',
+        primaryMetricValue: '210 bar (OK)',
+        sensors: [
+          { name: 'Presión Acumuladores Nitrógeno', value: 210, unit: 'bar', nominalMin: 180, nominalMax: 230, currentStatus: 'NORMAL' }
+        ]
+      },
+      TREN_RODAJE_SUSPENSION: {
+        id: 'TREN_RODAJE_SUSPENSION',
+        name: 'Orugas Pesadas, Rodillos & Transmisión de Propulsión',
+        healthScore: 82.0,
+        status: 'OPTIMO',
+        temperature: 45.0,
+        vibration: 2.8,
+        wearLevel: 32.0,
+        rulHours: 1100,
+        anomalyDetected: false,
+        anomalyScore: 0.16,
+        primaryMetricName: 'Tensión Hidráulica de Oruga',
+        primaryMetricValue: '185 bar',
+        sensors: [
+          { name: 'Desgaste Eslabones de Oruga', value: 28, unit: '%', nominalMin: 0, nominalMax: 70, currentStatus: 'NORMAL' }
+        ]
+      },
+      SISTEMA_ELECTRICO_CONTROL: {
+        id: 'SISTEMA_ELECTRICO_CONTROL',
+        name: 'Inversores IGBT Centurion & PLC de Control',
+        healthScore: 95.0,
+        status: 'OPTIMO',
+        temperature: 36.0,
+        vibration: 0.4,
+        wearLevel: 8.0,
+        rulHours: 4200,
+        anomalyDetected: false,
+        anomalyScore: 0.02,
+        primaryMetricName: 'Voltaje Bus DC 1200V',
+        primaryMetricValue: '1195 V (Ripple < 1.2%)',
+        sensors: [
+          { name: 'Temperatura Módulos IGBT', value: 48.0, unit: '°C', nominalMin: 20, nominalMax: 75, currentStatus: 'NORMAL' }
+        ]
+      },
+      ESTRUCTURA_CHASIS_TOLVA: {
+        id: 'ESTRUCTURA_CHASIS_TOLVA',
+        name: 'Corona de Giro, Pluma, Mango y Balde de 73 yd³',
+        healthScore: 84.0,
+        status: 'OPTIMO',
+        temperature: 30.0,
+        vibration: 3.2,
+        wearLevel: 30.0,
+        rulHours: 950,
+        anomalyDetected: false,
+        anomalyScore: 0.12,
+        primaryMetricName: 'Desgaste Dientes & Labio Balde',
+        primaryMetricValue: '28% (4 Puntos ESCO)',
+        sensors: [
+          { name: 'Vibración Cojinete Corona Giro', value: 2.1, unit: 'mm/s', nominalMin: 0.5, nominalMax: 4.0, currentStatus: 'NORMAL' }
+        ]
+      }
+    }
+  },
+  {
+    id: 'eq-kom-980e-02',
+    code: 'KM-980-02',
+    name: 'Camión Eléctrico Komatsu 980E-4 #02',
+    type: 'CAMION_EXTRACCION',
+    model: '980E-4 (400 Ton AC Drive)',
+    manufacturer: 'Komatsu',
+    year: 2023,
+    totalOperatingHours: 9820,
+    status: 'OPERATIVO',
+    healthScore: 94.6,
+    rulHours: 1450,
+    rulConfidence: 96.0,
+    availabilityPct: 95.8,
+    utilizationPct: 89.2,
+    mtbfHours: 540,
+    mttrHours: 3.2,
+    gps: {
+      lat: -16.4190,
+      lng: -71.5442,
+      altitude: 3505,
+      zoneName: 'Aproximación Chancadora Primaria 01',
+      speedKmh: 26.5,
+      headingDeg: 340
+    },
+    activeAlertCount: 0,
+    openWorkOrderCount: 0,
+    assignedOperator: 'Ing. Roberto Silva',
+    currentShift: 'GUARDIA_DIA',
+    lastServiceDate: '2026-08-15',
+    nextScheduledPmDate: '2026-09-12',
+    hourlyDowntimeCostUsd: 130000,
+    telemetry: {
+      timestamp: '2026-08-23T13:19:00Z',
+      engineRpm: 1800,
+      engineTemp: 86.4,
+      coolantTemp: 84.0,
+      oilPressure: 52.0,
+      hydraulicPressure: 245.0,
+      hydraulicTemp: 68.0,
+      vibrationRms: 1.84,
+      vibrationPeak: 3.9,
+      fuelRate: 285.0,
+      fuelEfficiency: 1.38,
+      payloadTons: 392.0,
+      payloadNominal: 400.0,
+      cycleCount: 22,
+      engineLoadPct: 84.0,
+      brakeTemp: 78.0,
+      batteryVoltage: 28.0,
+      transmissionOilTemp: 74.0,
+      ambientTemp: 24.0,
+      altitudeMeters: 3505,
+      inclineGradePct: 4.2,
+      dustIndexPpm: 32.0,
+      isoOilContamination: '16/14/11'
+    },
+    subsystems: {
+      MOTOR_DIESEL_POWERTRAIN: {
+        id: 'MOTOR_DIESEL_POWERTRAIN',
+        name: 'Motor Komatsu SSDA18V170 (3500 HP)',
+        healthScore: 96.0,
+        status: 'OPTIMO',
+        temperature: 86.4,
+        vibration: 1.5,
+        wearLevel: 12.0,
+        rulHours: 1900,
+        anomalyDetected: false,
+        anomalyScore: 0.04,
+        primaryMetricName: 'Presión Rail Combustible',
+        primaryMetricValue: '1850 bar (Nominal)',
+        sensors: [
+          { name: 'Temperatura Aceite Cárter', value: 86.4, unit: '°C', nominalMin: 70, nominalMax: 95, currentStatus: 'NORMAL' },
+          { name: 'Presión Common Rail', value: 1850, unit: 'bar', nominalMin: 1400, nominalMax: 2000, currentStatus: 'NORMAL' }
+        ]
+      },
+      SISTEMA_HIDRAULICO: {
+        id: 'SISTEMA_HIDRAULICO',
+        name: 'Dirección & Sistema de Levante Hidráulico',
+        healthScore: 95.0,
+        status: 'OPTIMO',
+        temperature: 68.0,
+        pressure: 245.0,
+        vibration: 1.4,
+        wearLevel: 10.0,
+        rulHours: 2100,
+        anomalyDetected: false,
+        anomalyScore: 0.05,
+        primaryMetricName: 'Presión Circuito Dirección',
+        primaryMetricValue: '245 bar (Flujo 820 L/min)',
+        sensors: [
+          { name: 'Temperatura de Tanque', value: 68.0, unit: '°C', nominalMin: 45, nominalMax: 80, currentStatus: 'NORMAL' }
+        ]
+      },
+      TREN_RODAJE_SUSPENSION: {
+        id: 'TREN_RODAJE_SUSPENSION',
+        name: 'Suspensión Hydrair II & Motores de Tracción GE',
+        healthScore: 93.0,
+        status: 'OPTIMO',
+        temperature: 58.0,
+        vibration: 2.1,
+        wearLevel: 18.0,
+        rulHours: 1600,
+        anomalyDetected: false,
+        anomalyScore: 0.08,
+        primaryMetricName: 'Temperatura Rodamiento Wheel Motor',
+        primaryMetricValue: '58.0°C (Vib. 2.1 mm/s)',
+        sensors: [
+          { name: 'Vibración Motor Rueda Tras. Der.', value: 2.1, unit: 'mm/s', nominalMin: 0.5, nominalMax: 4.5, currentStatus: 'NORMAL' }
+        ]
+      },
+      SISTEMA_ELECTRICO_CONTROL: {
+        id: 'SISTEMA_ELECTRICO_CONTROL',
+        name: 'Tracción AC Drive Invertex II',
+        healthScore: 98.0,
+        status: 'OPTIMO',
+        temperature: 39.0,
+        vibration: 0.5,
+        wearLevel: 5.0,
+        rulHours: 4500,
+        anomalyDetected: false,
+        anomalyScore: 0.02,
+        primaryMetricName: 'Eficiencia Tracción Eléctrica',
+        primaryMetricValue: '96.8% (DC Bus 1800V)',
+        sensors: [
+          { name: 'Temperatura Puente Inversor', value: 52.0, unit: '°C', nominalMin: 25, nominalMax: 80, currentStatus: 'NORMAL' }
+        ]
+      },
+      ESTRUCTURA_CHASIS_TOLVA: {
+        id: 'ESTRUCTURA_CHASIS_TOLVA',
+        name: 'Chasis Estructural & Tolva Antidesgaste 400T',
+        healthScore: 91.0,
+        status: 'OPTIMO',
+        temperature: 24.0,
+        vibration: 1.9,
+        wearLevel: 16.0,
+        rulHours: 2800,
+        anomalyDetected: false,
+        anomalyScore: 0.06,
+        primaryMetricName: 'Sensor Carga Payload VIMS',
+        primaryMetricValue: '392.0 Ton (98.0% Cap.)',
+        sensors: [
+          { name: 'Distribución Peso Eje Delantero', value: 33.2, unit: '%', nominalMin: 30, nominalMax: 35, currentStatus: 'NORMAL' }
+        ]
+      }
+    }
+  },
+  {
+    id: 'eq-cat-6060-03',
+    code: 'EX-6060-03',
+    name: 'Pala Hidráulica de Frontal CAT 6060 FS #03',
+    type: 'PALA_HIDRAULICA',
+    model: '6060 FS (34 m³ / 600 Ton)',
+    manufacturer: 'Caterpillar',
+    year: 2021,
+    totalOperatingHours: 16900,
+    status: 'EN_MANTENIMIENTO',
+    healthScore: 62.0,
+    rulHours: 64, // En taller por PM 500h + cambio de mangueras de alta presión
+    rulConfidence: 89.0,
+    availabilityPct: 82.0,
+    utilizationPct: 74.5,
+    mtbfHours: 380,
+    mttrHours: 5.4,
+    gps: {
+      lat: -16.4122,
+      lng: -71.5518,
+      altitude: 3490,
+      zoneName: 'Taller Central Mina (Bahía 3 - Mantenimiento)',
+      speedKmh: 0.0,
+      headingDeg: 0
+    },
+    activeAlertCount: 1,
+    openWorkOrderCount: 1,
+    assignedOperator: 'Sup. Jorge Vargas (Líder Taller)',
+    currentShift: 'GUARDIA_DIA',
+    lastServiceDate: '2026-07-20',
+    nextScheduledPmDate: '2026-08-23', // Hoy
+    hourlyDowntimeCostUsd: 155000,
+    telemetry: {
+      timestamp: '2026-08-23T13:15:00Z',
+      engineRpm: 800, // Ralentí en taller
+      engineTemp: 52.0,
+      coolantTemp: 48.0,
+      oilPressure: 42.0,
+      hydraulicPressure: 120.0,
+      hydraulicTemp: 44.0,
+      vibrationRms: 1.1,
+      vibrationPeak: 2.2,
+      fuelRate: 35.0,
+      fuelEfficiency: 0.0,
+      payloadTons: 0.0,
+      payloadNominal: 62.0,
+      cycleCount: 0,
+      engineLoadPct: 15.0,
+      brakeTemp: 32.0,
+      batteryVoltage: 27.5,
+      transmissionOilTemp: 40.0,
+      ambientTemp: 22.0,
+      altitudeMeters: 3490,
+      inclineGradePct: 0.0,
+      dustIndexPpm: 15.0,
+      isoOilContamination: '19/16/13'
+    },
+    subsystems: {
+      MOTOR_DIESEL_POWERTRAIN: {
+        id: 'MOTOR_DIESEL_POWERTRAIN',
+        name: 'Motores Doble CAT 3512E (2 x 1500 HP)',
+        healthScore: 78.0,
+        status: 'OPTIMO',
+        temperature: 52.0,
+        vibration: 1.2,
+        wearLevel: 32.0,
+        rulHours: 920,
+        anomalyDetected: false,
+        anomalyScore: 0.15,
+        primaryMetricName: 'Sincronización Dual Engine',
+        primaryMetricValue: 'Delta RPM: 12 RPM (OK)',
+        sensors: [
+          { name: 'Temperatura Motor 1', value: 52.0, unit: '°C', nominalMin: 70, nominalMax: 95, currentStatus: 'NORMAL' },
+          { name: 'Temperatura Motor 2', value: 51.5, unit: '°C', nominalMin: 70, nominalMax: 95, currentStatus: 'NORMAL' }
+        ]
+      },
+      SISTEMA_HIDRAULICO: {
+        id: 'SISTEMA_HIDRAULICO',
+        name: 'Circuito Hidráulico Principal de 4 Bombas & Enfriadores',
+        healthScore: 58.0,
+        status: 'ADVERTENCIA',
+        temperature: 44.0,
+        pressure: 120.0,
+        vibration: 2.4,
+        wearLevel: 55.0,
+        rulHours: 64,
+        anomalyDetected: true,
+        anomalyScore: 0.65,
+        primaryMetricName: 'Fuga Interna Válvula Banco 2',
+        primaryMetricValue: 'En revisión en taller',
+        sensors: [
+          { name: 'Presión Banco Válvulas', value: 120, unit: 'bar', nominalMin: 280, nominalMax: 350, currentStatus: 'ALTO' }
+        ]
+      },
+      TREN_RODAJE_SUSPENSION: {
+        id: 'TREN_RODAJE_SUSPENSION',
+        name: 'Orugas de Excavadora, Zapatas y Rodillos Superiores',
+        healthScore: 74.0,
+        status: 'OPTIMO',
+        temperature: 30.0,
+        vibration: 1.5,
+        wearLevel: 42.0,
+        rulHours: 850,
+        anomalyDetected: false,
+        anomalyScore: 0.18,
+        primaryMetricName: 'Desgaste Rodillos de Carga',
+        primaryMetricValue: '42% (Vida remanente 850h)',
+        sensors: [
+          { name: 'Tensión Cilindro Oruga', value: 160, unit: 'bar', nominalMin: 140, nominalMax: 190, currentStatus: 'NORMAL' }
+        ]
+      },
+      SISTEMA_ELECTRICO_CONTROL: {
+        id: 'SISTEMA_ELECTRICO_CONTROL',
+        name: 'Sistema Electro-Electrónico & Pantalla de Cabina',
+        healthScore: 88.0,
+        status: 'OPTIMO',
+        temperature: 28.0,
+        vibration: 0.6,
+        wearLevel: 18.0,
+        rulHours: 2200,
+        anomalyDetected: false,
+        anomalyScore: 0.05,
+        primaryMetricName: 'Diagnóstico ECM J1939',
+        primaryMetricValue: 'Códigos activos: 1 (PM 500h)',
+        sensors: [
+          { name: 'Voltaje Sistema 24V', value: 27.5, unit: 'V', nominalMin: 24, nominalMax: 28.5, currentStatus: 'NORMAL' }
+        ]
+      },
+      ESTRUCTURA_CHASIS_TOLVA: {
+        id: 'ESTRUCTURA_CHASIS_TOLVA',
+        name: 'Pluma TriPower, Balde 34 m³ y Cilindros de Volteo',
+        healthScore: 70.0,
+        status: 'OPTIMO',
+        temperature: 25.0,
+        vibration: 1.8,
+        wearLevel: 45.0,
+        rulHours: 720,
+        anomalyDetected: false,
+        anomalyScore: 0.20,
+        primaryMetricName: 'Inspección END Soldaduras Pluma',
+        primaryMetricValue: 'Sin fisuras estructurales',
+        sensors: [
+          { name: 'Espesor Planchas Fondo Balde', value: 48, unit: 'mm', nominalMin: 35, nominalMax: 80, currentStatus: 'NORMAL' }
+        ]
+      }
+    }
+  },
+  {
+    id: 'eq-cat-994k-01',
+    code: 'CF-994-01',
+    name: 'Cargador Frontal Caterpillar 994K #01',
+    type: 'CARGADOR_FRONTAL',
+    model: '994K (19 m³ / 45 Ton)',
+    manufacturer: 'Caterpillar',
+    year: 2023,
+    totalOperatingHours: 6420,
+    status: 'OPERATIVO',
+    healthScore: 91.8,
+    rulHours: 1280,
+    rulConfidence: 95.0,
+    availabilityPct: 93.5,
+    utilizationPct: 86.0,
+    mtbfHours: 490,
+    mttrHours: 3.8,
+    gps: {
+      lat: -16.4285,
+      lng: -71.5345,
+      altitude: 3385,
+      zoneName: 'Banco 3380 (Fase 4 - Acopio Lastre)',
+      speedKmh: 8.2,
+      headingDeg: 45
+    },
+    activeAlertCount: 0,
+    openWorkOrderCount: 0,
+    assignedOperator: 'Op. Juan Carlos Paredes',
+    currentShift: 'GUARDIA_DIA',
+    lastServiceDate: '2026-08-05',
+    nextScheduledPmDate: '2026-09-01',
+    hourlyDowntimeCostUsd: 95000,
+    telemetry: {
+      timestamp: '2026-08-23T13:19:30Z',
+      engineRpm: 1650,
+      engineTemp: 88.0,
+      coolantTemp: 85.0,
+      oilPressure: 48.0,
+      hydraulicPressure: 275.0,
+      hydraulicTemp: 72.0,
+      vibrationRms: 2.3,
+      vibrationPeak: 4.5,
+      fuelRate: 195.0,
+      fuelEfficiency: 2.1,
+      payloadTons: 42.8,
+      payloadNominal: 45.0,
+      cycleCount: 68,
+      engineLoadPct: 81.0,
+      brakeTemp: 84.0,
+      batteryVoltage: 28.1,
+      transmissionOilTemp: 79.0,
+      ambientTemp: 24.0,
+      altitudeMeters: 3385,
+      inclineGradePct: 2.0,
+      dustIndexPpm: 55.0,
+      isoOilContamination: '17/15/12'
+    },
+    subsystems: {
+      MOTOR_DIESEL_POWERTRAIN: {
+        id: 'MOTOR_DIESEL_POWERTRAIN',
+        name: 'Motor CAT 3516E (1739 HP)',
+        healthScore: 94.0,
+        status: 'OPTIMO',
+        temperature: 88.0,
+        vibration: 1.6,
+        wearLevel: 14.0,
+        rulHours: 1650,
+        anomalyDetected: false,
+        anomalyScore: 0.06,
+        primaryMetricName: 'Presión Turbo Boost',
+        primaryMetricValue: '2.4 bar (Potencia Máx)',
+        sensors: [
+          { name: 'Temperatura de Escape Izq.', value: 520, unit: '°C', nominalMin: 350, nominalMax: 620, currentStatus: 'NORMAL' }
+        ]
+      },
+      SISTEMA_HIDRAULICO: {
+        id: 'SISTEMA_HIDRAULICO',
+        name: 'Sistema Hidráulico de Levante e Inclinación',
+        healthScore: 92.0,
+        status: 'OPTIMO',
+        temperature: 72.0,
+        pressure: 275.0,
+        vibration: 1.8,
+        wearLevel: 16.0,
+        rulHours: 1400,
+        anomalyDetected: false,
+        anomalyScore: 0.07,
+        primaryMetricName: 'Tiempo de Ciclo Hidráulico',
+        primaryMetricValue: '12.8 s (Levante/Volteo)',
+        sensors: [
+          { name: 'Presión de Alivio Principal', value: 275, unit: 'bar', nominalMin: 250, nominalMax: 290, currentStatus: 'NORMAL' }
+        ]
+      },
+      TREN_RODAJE_SUSPENSION: {
+        id: 'TREN_RODAJE_SUSPENSION',
+        name: 'Articulación Central, Ejes y Neumáticos 58/85-57',
+        healthScore: 89.0,
+        status: 'OPTIMO',
+        temperature: 62.0,
+        vibration: 2.5,
+        wearLevel: 22.0,
+        rulHours: 1150,
+        anomalyDetected: false,
+        anomalyScore: 0.11,
+        primaryMetricName: 'Holgura Pasador de Articulación',
+        primaryMetricValue: '0.42 mm (Tolerancia 1.2 mm)',
+        sensors: [
+          { name: 'Temperatura Diferencial Delantero', value: 62.0, unit: '°C', nominalMin: 40, nominalMax: 85, currentStatus: 'NORMAL' }
+        ]
+      },
+      SISTEMA_ELECTRICO_CONTROL: {
+        id: 'SISTEMA_ELECTRICO_CONTROL',
+        name: 'Sistema VIMS 3G & Control de Tracción TCS',
+        healthScore: 96.0,
+        status: 'OPTIMO',
+        temperature: 32.0,
+        vibration: 0.4,
+        wearLevel: 6.0,
+        rulHours: 3800,
+        anomalyDetected: false,
+        anomalyScore: 0.02,
+        primaryMetricName: 'Enlace Satelital VIMS',
+        primaryMetricValue: '100% Conectado',
+        sensors: [
+          { name: 'Voltaje Bus 28V', value: 28.1, unit: 'V', nominalMin: 24, nominalMax: 29, currentStatus: 'NORMAL' }
+        ]
+      },
+      ESTRUCTURA_CHASIS_TOLVA: {
+        id: 'ESTRUCTURA_CHASIS_TOLVA',
+        name: 'Brazos de Levante de Acero Fundido y Cucharón 19 m³',
+        healthScore: 88.0,
+        status: 'OPTIMO',
+        temperature: 26.0,
+        vibration: 2.2,
+        wearLevel: 25.0,
+        rulHours: 1350,
+        anomalyDetected: false,
+        anomalyScore: 0.10,
+        primaryMetricName: 'Desgaste Cantoneras Cucharón',
+        primaryMetricValue: '22% Desgaste',
+        sensors: [
+          { name: 'Espesor Cuchilla Base', value: 72, unit: 'mm', nominalMin: 50, nominalMax: 90, currentStatus: 'NORMAL' }
+        ]
+      }
+    }
+  }
+];
+
+export const INITIAL_ALERTS: AlertNotification[] = [
+  {
+    id: 'alt-001',
+    equipmentId: 'eq-cat-797f-04',
+    equipmentCode: 'CA-797-04',
+    subsystem: 'SISTEMA_HIDRAULICO',
+    severity: 'CRITICA',
+    title: 'Anomalía Crítica: Cavitación y Sobretemperatura en Bomba Hidráulica Principal',
+    description: 'El modelo no supervisado de Isolation Forest detectó una desviación severa en el residuo de vibración (6.82 mm/s vs umbral 4.50 mm/s) correlacionada con sobretemperatura de aceite (98.4°C) y código de limpieza ISO 21/18/15.',
+    detectedAt: '2026-08-23T12:45:10Z',
+    acknowledged: false,
+    resolved: false,
+    iso14224Code: 'HYD-CAV-PUMP-02',
+    telemetryTrigger: {
+      sensor: 'Vibración Espectral Bomba 1 (RMS)',
+      observedValue: '6.82 mm/s / Temp 98.4°C',
+      threshold: 'Max 4.50 mm/s / Max 85°C'
+    },
+    prescriptiveAction: 'Reducir velocidad en rampa a máx 12 km/h. Dirigir equipo a Taller Central Bahía 2 para purga de aire, inspección de filtro de succión de 10 micras y reemplazo de bomba CAT-384-9210 antes de 142 horas para evitar falla catastrófica de $185k.',
+    associatedWorkOrderId: 'OT-2026-0842'
+  },
+  {
+    id: 'alt-002',
+    equipmentId: 'eq-cat-797f-04',
+    equipmentCode: 'CA-797-04',
+    subsystem: 'SISTEMA_HIDRAULICO',
+    severity: 'ADVERTENCIA',
+    title: 'RUL Inferior a Umbral Crítico (< 150 horas)',
+    description: 'La curva de degradación estimada mediante el modelo predictivo LSTM-Weibull proyecta una vida útil remanente de 142 horas en el circuito de levante.',
+    detectedAt: '2026-08-23T11:20:00Z',
+    acknowledged: true,
+    acknowledgedBy: 'Ing. Carlos Mendoza',
+    acknowledgedAt: '2026-08-23T11:35:12Z',
+    resolved: false,
+    iso14224Code: 'RUL-DEGRADE-HYD',
+    telemetryTrigger: {
+      sensor: 'Prognosis RUL Circuito Levante',
+      observedValue: '142 Horas (Confianza 94.2%)',
+      threshold: 'Umbral Mínimo 200 Horas'
+    },
+    prescriptiveAction: 'Programar Orden de Trabajo Prescriptiva en la próxima ventana de mantenimiento menor de 12 horas.',
+    associatedWorkOrderId: 'OT-2026-0842'
+  },
+  {
+    id: 'alt-003',
+    equipmentId: 'eq-cat-6060-03',
+    equipmentCode: 'EX-6060-03',
+    subsystem: 'SISTEMA_HIDRAULICO',
+    severity: 'ADVERTENCIA',
+    title: 'Mantenimiento Preventivo PM-500h en Ejecución',
+    description: 'Equipo ingresado a Taller Central Bahía 3 para cambio de aceite hidráulico ISO VG 46 y cambio de mangueras de presión de giro.',
+    detectedAt: '2026-08-23T08:00:00Z',
+    acknowledged: true,
+    acknowledgedBy: 'Sup. Jorge Vargas',
+    acknowledgedAt: '2026-08-23T08:05:00Z',
+    resolved: false,
+    iso14224Code: 'PM-SCHED-500H',
+    telemetryTrigger: {
+      sensor: 'Horómetro Acumulado',
+      observedValue: '16,900 Horas',
+      threshold: 'Intervalo 500h'
+    },
+    prescriptiveAction: 'Finalizar protocolo de pruebas de presión estática antes de las 16:00 horas para liberación a operación en Fase 4.',
+    associatedWorkOrderId: 'OT-2026-0839'
+  }
+];
+
+export const INITIAL_WORK_ORDERS: WorkOrder[] = [
+  {
+    id: 'ot-001',
+    code: 'OT-2026-0842',
+    equipmentId: 'eq-cat-797f-04',
+    equipmentCode: 'CA-797-04',
+    subsystem: 'SISTEMA_HIDRAULICO',
+    type: 'PRESCRIPTIVO',
+    status: 'PLANIFICADA',
+    priority: 'CRITICA_URGENTE',
+    title: 'Reemplazo Prescriptivo de Bomba de Levante y Flushing de Circuito Hidráulico',
+    description: 'Generada automáticamente por el Gemelo Digital tras detectar cavitación severa, vibración de 6.82 mm/s y RUL de 142 horas. Requiere reemplazo de bomba principal CAT-384-9210 y sustitución de kit de sellos.',
+    iso14224Mechanism: 'Cavitación severa inducida por contaminación de fluido y sobretemperatura sostenida en rampa',
+    iso14224FailureMode: 'Pérdida de Presión Hidráulica / Desgaste Acelerado de Placas de Empuje en Bomba de Pistones',
+    createdAt: '2026-08-23T12:50:00Z',
+    scheduledStartDate: '2026-08-24T06:00:00Z',
+    estimatedDurationHours: 6.5,
+    assignedLeadTech: 'Ing. Rodrigo Alarcón (Esp. Hidráulico CAT)',
+    techniciansTeam: ['Téc. Fernando Ruiz', 'Téc. Javier Ccama', 'Téc. David Quispe'],
+    requiredParts: [
+      {
+        partId: 'part-01',
+        partNumber: 'CAT-384-9210',
+        description: 'Bomba de Pistones Axiales Hidráulica Principal (350 bar)',
+        quantity: 1,
+        unitCostUsd: 18500
+      },
+      {
+        partId: 'part-02',
+        partNumber: 'CAT-458-1120',
+        description: 'Kit de Sellos y Empaques de Cilindro de Levante (Hoist)',
+        quantity: 2,
+        unitCostUsd: 3200
+      },
+      {
+        partId: 'part-07',
+        partNumber: 'CAT-1R-0716',
+        description: 'Filtro de Aceite de Motor Ultra High Efficiency (Pack x12)',
+        quantity: 1,
+        unitCostUsd: 850
+      }
+    ],
+    totalEstimatedCostUsd: 25750,
+    triggerSource: 'ALERTA_GEMELO_DIGITAL',
+    prescriptiveRecommendations: [
+      'Bloqueo LOTO (Lock Out - Tag Out) del circuito hidráulico y despresurización de acumuladores.',
+      'Drenado y toma de muestra de aceite para análisis espectrométrico de desgaste (ASTM D5185).',
+      'Desmontaje de bomba de pistones axiales e inspección visual de barrilete y placa de válvulas.',
+      'Instalación de nueva unidad CAT-384-9210 con torque especificado a 320 Nm.',
+      'Flushing de líneas y llenado con aceite nuevo ISO VG 46 certificado bajo norma ISO 4406 (< 16/14/11).',
+      'Prueba de rampa de presión estática a 310 bar con monitoreo telemétrico en tiempo real.'
+    ],
+    safetyChecklist: [
+      { task: 'Verificación de Energía Cero (Hidráulica y Eléctrica 24V)', completed: false },
+      { task: 'Instalación de Traba de Tolva de Seguridad Mecánica', completed: false },
+      { task: 'Bandeja Antiderrame para contención de 200L de fluido', completed: false },
+      { task: 'Uso de EPP Dieléctrico y Protección Facial para alta presión', completed: false }
+    ],
+    notes: 'Prioridad alta. El camión genera $135k/hora en producción. Esta intervención de 6.5h evita una parada no planificada de 48h ($6.4M de impacto).'
+  },
+  {
+    id: 'ot-002',
+    code: 'OT-2026-0839',
+    equipmentId: 'eq-cat-6060-03',
+    equipmentCode: 'EX-6060-03',
+    subsystem: 'SISTEMA_HIDRAULICO',
+    type: 'PREVENTIVO',
+    status: 'EN_EJECUCION',
+    priority: 'ALTA',
+    title: 'Mantenimiento Preventivo PM-500 Horas & Inspección de Mangueras de Giro',
+    description: 'Servicio programado de lubricación integral, cambio de filtros de aceite de motor y filtros de succión hidráulica, inspección no destructiva de mangueras flexibles del banco de válvulas.',
+    iso14224Mechanism: 'Desgaste natural de consumibles y degradación térmica de elastómeros',
+    iso14224FailureMode: 'Mantenimiento Programado según Manual OEM Caterpillar',
+    createdAt: '2026-08-22T16:00:00Z',
+    scheduledStartDate: '2026-08-23T08:00:00Z',
+    estimatedDurationHours: 8.0,
+    actualDurationHours: 5.2,
+    assignedLeadTech: 'Sup. Jorge Vargas (Líder Taller)',
+    techniciansTeam: ['Téc. Walter Huamán', 'Téc. Luis Mamani'],
+    requiredParts: [
+      {
+        partId: 'part-07',
+        partNumber: 'CAT-1R-0716',
+        description: 'Filtro de Aceite de Motor Ultra High Efficiency (Pack x12)',
+        quantity: 2,
+        unitCostUsd: 850
+      }
+    ],
+    totalEstimatedCostUsd: 1700,
+    triggerSource: 'PROGRAMA_MANTENIMIENTO',
+    prescriptiveRecommendations: [
+      'Completar reemplazo de elementos filtrantes.',
+      'Verificar torque en pernos de corona de giro a 850 Nm.',
+      'Realizar prueba de presiones de stand-by y calado de implementos.'
+    ],
+    safetyChecklist: [
+      { task: 'Bloqueo LOTO de motores diésel gemelos', completed: true },
+      { task: 'Colocación de cuñas y balde apoyado en suelo sobre caballetes', completed: true },
+      { task: 'Permiso de Trabajo Seguro en Altura y Caliente', completed: true }
+    ],
+    notes: 'Avance actual: 65%. Liberación estimada para las 16:00 horas.'
+  }
+];
+
+export const INITIAL_FLEET_KPIS: MiningFleetKPIs = {
+  fleetHealthAvg: 81.8,
+  physicalAvailabilityPct: 90.0,
+  effectiveUtilizationPct: 83.9,
+  meanTimeBetweenFailuresHours: 502,
+  meanTimeToRepairHours: 4.1,
+  totalOperatingHoursToday: 384.5,
+  totalTonnageMovedToday: 48950,
+  avoidedDowntimeCostUsd: 6480000, // $6.48M ahorrados mediante intervenciones prescriptivas tempranas
+  openCriticalAlertsCount: 1,
+  pendingWorkOrdersCount: 2,
+  equipmentCountByStatus: {
+    operativo: 4,
+    enMantenimiento: 1,
+    fueraDeServicio: 0,
+    standBy: 0
+  }
+};

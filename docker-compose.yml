@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mining-twin-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mining_twin}
+      POSTGRES_USER: ${POSTGRES_USER:-mining}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mining_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5436}:5432"
+    volumes:
+      - mining_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mining} -d ${POSTGRES_DB:-mining_twin}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: mining-twin-api
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-mining}:${POSTGRES_PASSWORD:-mining_dev_password}@postgres:5432/${POSTGRES_DB:-mining_twin}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mining-twin-web
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mining_postgres_data:
