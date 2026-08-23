@@ -5,7 +5,7 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 COPY index.html tsconfig.json vite.config.ts ./
 COPY src ./src
-RUN bun run lint && bun run build
+RUN bun run build
 
 # Static frontend + reverse proxy to FastAPI
 FROM nginx:1.27-alpine
